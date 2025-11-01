@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Beni affeder misin?</title>
+  <style>
+    :root{
+      --bg: #2ecc71; /* yeşil arka plan */
+      --card-bg: rgba(255,255,255,0.06);
+      --accent: rgba(0,0,0,0.08);
+      --btn-bg: rgba(255,255,255,0.95);
+      --btn-border: rgba(0,0,0,0.08);
+      --text: #0b2e19;
+      --muted: rgba(0,0,0,0.6);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      background:var(--bg);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+
+    .card{
+      width:100%;
+      max-width:520px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
+      border-radius:14px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+      padding:28px;
+      text-align:center;
+      backdrop-filter: blur(6px);
+    }
+
+    h1{
+      margin:0 0 14px 0;
+      font-size:26px;
+      letter-spacing:0.2px;
+    }
+    p.lead{
+      margin:0 0 22px 0;
+      color:var(--muted);
+      font-size:15px;
+    }
+
+    .btn-row{
+      display:flex;
+      gap:12px;
+      justify-content:center;
+      margin-bottom:20px;
+      flex-wrap:wrap;
+    }
+
+    button.choice{
+      appearance:none;
+      border:1px solid var(--btn-border);
+      background:var(--btn-bg);
+      padding:10px 16px;
+      border-radius:999px;
+      font-weight:600;
+      cursor:pointer;
+      min-width:110px;
+      transition: transform .12s ease, box-shadow .12s ease;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    button.choice:active{transform:translateY(1px)}
+    button.choice:focus{outline:3px solid rgba(0,0,0,0.06)}
+
+    .image-wrap{
+      height:280px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:var(--card-bg);
+      border-radius:10px;
+      overflow:hidden;
+      position:relative;
+    }
+
+    .image-wrap img{
+      max-width:100%;
+      max-height:100%;
+      object-fit:contain;
+      opacity:0;
+      transform:scale(0.98);
+      transition: opacity .35s ease, transform .35s ease;
+    }
+    .image-wrap img.show{
+      opacity:1;
+      transform:scale(1);
+    }
+
+    .hint{
+      margin-top:12px;
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    /* responsive */
+    @media (max-width:420px){
+      .card{padding:20px}
+      h1{font-size:22px}
+      .image-wrap{height:200px}
+      button.choice{min-width:90px;padding:9px 12px}
+    }
+    /* Kalp animasyonu */
+.heart {
+  position: fixed;
+  bottom: 60px;
+  font-size: 22px;
+  color: #ff7aa2;
+  animation: floatUp 2.5s ease-in forwards;
+  opacity: 0.9;
+}
+
+@keyframes floatUp {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-200px) scale(1.6); opacity: 0; }
+}
+
+/* Tebessüm mesajı */
+#smile-message {
+  position: fixed;
+  top: 60%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 20px;
+  color: white;
+  opacity: 0;
+  transition: opacity 1s ease;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+#smile-message.show {
+  opacity: 1;
+}
+
+  </style>
+</head>
+<body>
+  <main class="card" role="main" aria-labelledby="q">
+    <h1 id="q">Beni affeder misin?</h1>
+
+    <div class="btn-row" role="tablist" aria-label="Cevap seçenekleri">
+      <button class="choice" data-choice="no">Hayır</button>
+      <button class="choice" data-choice="maybe">Bilmiyorum</button>
+      <button class="choice" data-choice="yes">Evet</button>
+    </div>
+
+    <div class="image-wrap" aria-live="polite">
+      <!-- Aşağıdaki img etiketlerine kendi resim URL'lerinizi koyabilirsiniz. -->
+      <!-- Örnek olarak placekitten kullanıldı; isterseniz bunları kendi fotoğraflarınla değiştir. -->
+
+      <img id="img-no" src=Hayır.jpg alt="Üzgün suratlı kedi" />
+      <img id="img-maybe" src=bilmiyorum.jpg alt="Bekleyen birisi" />
+      <img id="img-yes" src=evet.jpg alt="Kalp yapan kedi" />
+    </div>
+
+  </main>
+
+  <script>
+    // Basit ve erişilebilir seçim gösterimi
+    const buttons = document.querySelectorAll('button.choice');
+    const imgNo = document.getElementById('img-no');
+    const imgMaybe = document.getElementById('img-maybe');
+    const imgYes = document.getElementById('img-yes');
+    const imgs = { no: imgNo, maybe: imgMaybe, yes: imgYes };
+
+    // gizle hepsini başta
+    Object.values(imgs).forEach(i=>{ i.classList.remove('show'); i.setAttribute('aria-hidden','true'); });
+
+    function showChoice(key){
+  // Hepsini gizle
+  Object.values(imgs).forEach(i=>{
+    i.classList.remove('show');
+    i.setAttribute('aria-hidden','true');
+  });
+
+  const el = imgs[key];
+  if(!el) return;
+
+  // Küçük bir gecikme ile göster (daha hoş bir geçiş için)
+  setTimeout(()=>{
+    el.classList.add('show');
+    el.setAttribute('aria-hidden','false');
+  }, 80);
+
+  // Eğer cevap 'Evet' ise kalp animasyonunu başlat
+  if (key === 'yes') {
+    createHearts();
+    setTimeout(() => {
+    const msg = document.getElementById('smile-message');
+    msg.classList.add('show');
+  }, 1000);
+  }
+}
+
+
+function createHearts() {
+  for (let i = 0; i < 10; i++) {
+    const heart = document.createElement('div');
+    heart.classList.add('heart');
+    heart.textContent = '💖';
+    heart.style.left = Math.random() * 100 + 'vw';
+    heart.style.animationDuration = (1.8 + Math.random() * 1.2) + 's';
+    document.body.appendChild(heart);
+
+    setTimeout(() => {
+      heart.remove();
+    }, 2500);
+  }
+}
+
+
+    buttons.forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const key = btn.dataset.choice;
+        showChoice(key);
+      });
+      // klavye ile anlaşılır olması için Enter/Space tuşlarını destekle
+      btn.addEventListener('keydown', (ev)=>{
+        if(ev.key === 'Enter' || ev.key === ' '){
+          ev.preventDefault();
+          btn.click();
+        }
+      });
+    });
+
+    // Opsiyonel: eğer sayfa yüklendiğinde bir seçim göstermek isterseniz
+    // showChoice('maybe');
+  </script>
+  <div id="smile-message">Umarım yüzünde ufak da olsa bir tebessüme sebep olmuşumdur.</div>
+</body>
+</html>
